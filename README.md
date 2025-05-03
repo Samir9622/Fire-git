@@ -76,12 +76,12 @@
         // Your Firebase configuration object
         // IMPORTANT: Replace with your actual Firebase project config
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT_ID.firebaseapp.com", // Change this to your GitHub Pages domain when deployed
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            apiKey: "AIzaSyCavlVE5SoTRsGrhqNHyk6V1QC_GKYrx94",
+            authDomain: "shrinkwrap-tnjfi.firebaseapp.com", // Change this to your GitHub Pages domain when deployed
+            projectId: "shrinkwrap-tnjfi",
+            storageBucket: "shrinkwrap-tnjfi.appspot.com",
             messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID"
+            appId: "1:617549612593:web:9a705c4e804108bed1b710"
         };
         
         // Function to detect if we're running on GitHub Pages
