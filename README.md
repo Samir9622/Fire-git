@@ -80,7 +80,7 @@
             authDomain: "shrinkwrap-tnjfi.firebaseapp.com", // Change this to your GitHub Pages domain when deployed
             projectId: "shrinkwrap-tnjfi",
             storageBucket: "shrinkwrap-tnjfi.appspot.com",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            messagingSenderId: "617549612593",
             appId: "1:617549612593:web:9a705c4e804108bed1b710"
         };
         
