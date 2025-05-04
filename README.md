@@ -3,19 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Firebase Authentication with GitHub Pages</title>
+    <title>Firebase Authentication</title>
     
     <!-- Tailwind CSS via jsDelivr -->
     <script src="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.js"></script>
-    
-    <!-- Firebase App (the core Firebase SDK) -->
-    <script src="https://cdn.jsdelivr.net/npm/firebase@9.22.0/firebase-app-compat.js"></script>
-    
-    <!-- Firebase Auth -->
-    <script src="https://cdn.jsdelivr.net/npm/firebase@9.22.0/firebase-auth-compat.js"></script>
-    
-    <!-- Firebase Firestore (optional, for user data) -->
-    <script src="https://cdn.jsdelivr.net/npm/firebase@9.22.0/firebase-firestore-compat.js"></script>
     
     <style>
         .loader {
@@ -32,204 +23,177 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
+        /* Additional styles to ensure buttons are clickable */
+        .auth-button {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .auth-button:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        
+        .auth-button:active {
+            transform: translateY(0);
+        }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-4">
-    <div class="bg-white rounded-lg shadow-xl p-8 max-w-md w-full">
-        <h1 class="text-2xl font-bold text-center mb-6">Firebase Authentication</h1>
+    <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+        <h1 class="text-2xl font-bold mb-6 text-center">Firebase Authentication</h1>
         
-        <!-- Auth status container -->
-        <div id="auth-status" class="mb-6 text-center">Checking authentication status...</div>
         <div id="loader" class="loader"></div>
         
-        <!-- Login container - shown when user is not logged in -->
-        <div id="login-container" class="hidden flex flex-col items-center">
-            <p class="mb-4 text-gray-700">Please sign in to continue:</p>
-            <button id="google-signin" class="bg-white border border-gray-300 rounded-lg px-6 py-3 flex items-center justify-center hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors w-full mb-4">
-                <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12.24 10.285V14.4h6.806c-.275 1.765-2.056 5.174-6.806 5.174-4.095 0-7.439-3.389-7.439-7.574s3.345-7.574 7.439-7.574c2.33 0 3.891.989 4.785 1.849l3.254-3.138C18.189 1.186 15.479 0 12.24 0c-6.635 0-12 5.365-12 12s5.365 12 12 12c6.926 0 11.52-4.869 11.52-11.726 0-.788-.085-1.39-.189-1.989H12.24z" fill="#4285F4"/>
-                    <path d="M12.24 10.285V14.4h6.806c-.275 1.765-2.056 5.174-6.806 5.174-4.095 0-7.439-3.389-7.439-7.574s3.345-7.574 7.439-7.574c2.33 0 3.891.989 4.785 1.849l3.254-3.138C18.189 1.186 15.479 0 12.24 0c-6.635 0-12 5.365-12 12s5.365 12 12 12c6.926 0 11.52-4.869 11.52-11.726 0-.788-.085-1.39-.189-1.989H12.24z" fill="#34A853" transform="translate(0 24) scale(1 -1)"/>
-                </svg>
-                Sign in with Google
+        <div id="auth-status" class="text-center mb-4">Checking authentication status...</div>
+        
+        <div id="login-container" class="hidden">
+            <p class="text-center mb-4">Please sign in to continue:</p>
+            
+            <!-- Google Sign In Button -->
+            <button id="googleSignIn" class="auth-button w-full flex items-center justify-center bg-white border border-gray-300 rounded-lg py-2 px-4 mb-3 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" class="h-5 w-5 mr-2">
+                <span>Sign in with Google</span>
+            </button>
+            
+            <!-- Add more auth providers as needed -->
+            
+            <div id="profilePicture" class="mt-4 hidden">
+                <img src="" alt="Profile Picture" class="w-16 h-16 rounded-full mx-auto">
+            </div>
+            
+            <button id="signOut" class="auth-button w-full bg-red-500 text-white py-2 px-4 rounded-lg mt-4 hidden hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500">
+                Sign Out
             </button>
         </div>
         
-        <!-- User info container - shown when user is logged in -->
-        <div id="user-container" class="hidden flex flex-col items-center">
-            <div class="mb-4 flex flex-col items-center">
-                <img id="user-photo" class="w-20 h-20 rounded-full mb-2" src="" alt="Profile Picture">
-                <h2 id="user-name" class="text-xl font-semibold"></h2>
-                <p id="user-email" class="text-gray-600"></p>
-            </div>
-            <button id="sign-out" class="bg-red-500 hover:bg-red-600 text-white rounded-lg px-6 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 transition-colors">Sign Out</button>
+        <div class="mt-6 text-sm text-gray-600">
+            <p class="text-center">Note: Make sure to configure your Firebase project with the correct authorized domains</p>
         </div>
-        
-        <!-- Status messages -->
-        <div id="status-messages" class="mt-6 text-sm text-center"></div>
-    </div>
-    
-    <div class="mt-8 text-center text-sm text-gray-500">
-        <p>Note: Make sure to configure your Firebase project with the correct authorized domains</p>
     </div>
 
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script src="https://cdn.jsdelivr.net/npm/firebase@9.22.0/firebase-app-compat.js"></script>
+
+    <!-- Firebase Auth -->
+    <script src="https://cdn.jsdelivr.net/npm/firebase@9.22.0/firebase-auth-compat.js"></script>
+
+    <!-- Firebase Firestore (optional, for user data) -->
+    <script src="https://cdn.jsdelivr.net/npm/firebase@9.22.0/firebase-firestore-compat.js"></script>
+    
     <script>
-        // Your Firebase configuration object
-        // IMPORTANT: Replace with your actual Firebase project config
+        // Firebase configuration
+        // REPLACE WITH YOUR FIREBASE CONFIG
         const firebaseConfig = {
             apiKey: "YOUR_API_KEY",
-            authDomain: "shrinkwrap-tnjfi.firebaseapp.com", // Change this to your GitHub Pages domain when deployed
-            projectId: "shrinkwrap-tnjfi",
-            storageBucket: "shrinkwrap-tnjfi.appspot.com",
-            messagingSenderId: "617549612593",
-            appId: "1:617549612593:web:9a705c4e804108bed1b710"
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
         };
-        
-        // Function to detect if we're running on GitHub Pages
-        function isGitHubPages() {
-            return window.location.hostname.includes('github.io');
-        }
-        
-        // Adjust the authDomain if we're on GitHub Pages
-        if (isGitHubPages()) {
-            // Extract your username and repo from the URL
-            const pathParts = window.location.pathname.split('/');
-            if (pathParts.length >= 2) {
-                const repoName = pathParts[1];
-                // Set the authDomain to the GitHub Pages domain
-                firebaseConfig.authDomain = window.location.hostname;
-                
-                // Log for debugging
-                logStatus(`Running on GitHub Pages with domain: ${firebaseConfig.authDomain}`);
-            }
-        }
         
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
         
-        // DOM elements
-        const authStatus = document.getElementById('auth-status');
+        // Debug mode - check if Firebase is properly initialized
+        console.log("Firebase initialized:", firebase.app.name);
+        
+        // References to elements
         const loader = document.getElementById('loader');
+        const authStatus = document.getElementById('auth-status');
         const loginContainer = document.getElementById('login-container');
-        const userContainer = document.getElementById('user-container');
-        const userPhoto = document.getElementById('user-photo');
-        const userName = document.getElementById('user-name');
-        const userEmail = document.getElementById('user-email');
-        const googleSignInButton = document.getElementById('google-signin');
-        const signOutButton = document.getElementById('sign-out');
-        const statusMessages = document.getElementById('status-messages');
+        const googleSignInBtn = document.getElementById('googleSignIn');
+        const signOutBtn = document.getElementById('signOut');
+        const profilePicture = document.getElementById('profilePicture');
+        const profileImg = profilePicture.querySelector('img');
         
-        // Function to log status messages
-        function logStatus(message) {
-            const timestamp = new Date().toLocaleTimeString();
-            const entry = document.createElement('div');
-            entry.textContent = `[${timestamp}] ${message}`;
-            statusMessages.prepend(entry);
-            console.log(`[${timestamp}] ${message}`);
-        }
-        
-        // Check if we have a pending redirect operation
-        function checkRedirectResult() {
-            logStatus('Checking for redirect result...');
-            
-            auth.getRedirectResult()
-                .then((result) => {
-                    loader.classList.add('hidden');
-                    
-                    if (result.user) {
-                        logStatus('Successfully signed in after redirect!');
-                        updateUIForUser(result.user);
-                    } else {
-                        logStatus('No redirect result or already processed');
-                        // Just continue with normal auth state check
-                    }
-                })
-                .catch((error) => {
-                    loader.classList.add('hidden');
-                    logStatus(`Error after redirect: ${error.message}`);
-                    
-                    if (error.code === 'auth/account-exists-with-different-credential') {
-                        logStatus('You have already signed up with a different auth provider for that email.');
-                    } else {
-                        console.error('Redirect error:', error);
-                    }
-                    
-                    loginContainer.classList.remove('hidden');
-                });
-        }
-        
-        // Update UI for a signed-in user
-        function updateUIForUser(user) {
-            authStatus.textContent = 'Signed in';
-            userContainer.classList.remove('hidden');
-            loginContainer.classList.add('hidden');
-            
-            if (user.photoURL) {
-                userPhoto.src = user.photoURL;
-            } else {
-                userPhoto.src = 'https://cdn.jsdelivr.net/npm/@tailwindcss/custom-forms@0.2.1/dist/user.svg';
-            }
-            
-            userName.textContent = user.displayName || 'User';
-            userEmail.textContent = user.email || '';
-            
-            logStatus(`Signed in as: ${user.email}`);
-        }
-        
-        // Update UI for signed-out user
-        function updateUIForSignedOut() {
-            authStatus.textContent = 'Signed out';
-            userContainer.classList.add('hidden');
+        // Show/hide elements based on auth state
+        function updateUI(user) {
+            loader.style.display = 'none';
             loginContainer.classList.remove('hidden');
-            logStatus('User signed out');
-        }
-        
-        // Listen for auth state changes
-        auth.onAuthStateChanged((user) => {
-            loader.classList.add('hidden');
             
             if (user) {
-                updateUIForUser(user);
+                authStatus.textContent = `Signed in as ${user.displayName || user.email}`;
+                googleSignInBtn.classList.add('hidden');
+                signOutBtn.classList.remove('hidden');
+                
+                if (user.photoURL) {
+                    profilePicture.classList.remove('hidden');
+                    profileImg.src = user.photoURL;
+                }
             } else {
-                updateUIForSignedOut();
+                authStatus.textContent = 'Please sign in to continue:';
+                googleSignInBtn.classList.remove('hidden');
+                signOutBtn.classList.add('hidden');
+                profilePicture.classList.add('hidden');
             }
+        }
+        
+        // Auth state change listener
+        firebase.auth().onAuthStateChanged(function(user) {
+            console.log("Auth state changed:", user ? "User signed in" : "User signed out");
+            updateUI(user);
         });
         
-        // Set up sign-in with Google
-        googleSignInButton.addEventListener('click', () => {
-            logStatus('Starting Google sign-in with redirect...');
-            loader.classList.remove('hidden');
+        // Google Sign In
+        googleSignInBtn.addEventListener('click', function() {
+            console.log("Google sign-in button clicked");
+            loader.style.display = 'block';
             
             const provider = new firebase.auth.GoogleAuthProvider();
-            provider.addScope('profile');
-            provider.addScope('email');
             
-            // Optional: Specify language
-            auth.useDeviceLanguage();
+            // Add additional OAuth scopes if needed
+            // provider.addScope('https://www.googleapis.com/auth/contacts.readonly');
             
-            // Sign in with redirect, properly configured for GitHub Pages
-            auth.signInWithRedirect(provider)
+            // Sign in with popup (better for most web apps)
+            firebase.auth().signInWithPopup(provider)
+                .then((result) => {
+                    console.log("Sign-in successful:", result.user.displayName);
+                })
                 .catch((error) => {
-                    loader.classList.add('hidden');
-                    logStatus(`Error starting redirect: ${error.message}`);
-                    console.error('Sign-in redirect error:', error);
+                    console.error("Error during sign-in:", error);
+                    authStatus.textContent = `Error: ${error.message}`;
+                    loader.style.display = 'none';
+                });
+                
+            // Alternative: Sign in with redirect
+            // firebase.auth().signInWithRedirect(provider);
+        });
+        
+        // Sign Out
+        signOutBtn.addEventListener('click', function() {
+            console.log("Sign-out button clicked");
+            loader.style.display = 'block';
+            
+            firebase.auth().signOut()
+                .then(() => {
+                    console.log("Sign-out successful");
+                })
+                .catch((error) => {
+                    console.error("Error during sign-out:", error);
+                    authStatus.textContent = `Error: ${error.message}`;
+                    loader.style.display = 'none';
                 });
         });
         
-        // Set up sign-out
-        signOutButton.addEventListener('click', () => {
-            logStatus('Signing out...');
-            auth.signOut();
-        });
+        // Debugging: Check if buttons have event listeners
+        console.log("Google Sign In button:", googleSignInBtn);
+        console.log("Sign Out button:", signOutBtn);
         
-        // Check for redirect result on page load
-        checkRedirectResult();
-        
-        // Handle any callback errors that might occur with the GitHub Pages URL
-        window.addEventListener('error', (e) => {
-            if (e.message && (e.message.includes('auth') || e.message.includes('firebase'))) {
-                logStatus(`Error caught: ${e.message}`);
-            }
+        // Force reactivation of buttons (in case they're stuck)
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                if (googleSignInBtn) {
+                    googleSignInBtn.disabled = false;
+                    console.log("Google Sign In button reactivated");
+                }
+                if (signOutBtn) {
+                    signOutBtn.disabled = false; 
+                    console.log("Sign Out button reactivated");
+                }
+            }, 2000); // Wait 2 seconds after page load
         });
     </script>
 </body>
