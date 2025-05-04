@@ -76,7 +76,7 @@
         // Your Firebase configuration object
         // IMPORTANT: Replace with your actual Firebase project config
         const firebaseConfig = {
-            apiKey: "api key",
+            apiKey: "apikey",
             authDomain: "shrinkwrap-tnjfi.firebaseapp.com", // Change this to your GitHub Pages domain when deployed
             projectId: "shrinkwrap-tnjfi",
             storageBucket: "shrinkwrap-tnjfi.appspot.com",
